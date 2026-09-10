@@ -1,0 +1,5 @@
+/bin/
+*.exe
+*.out
+*.log
+data.json
