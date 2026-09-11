@@ -32,6 +32,11 @@ type lyricsMsg struct {
 	lyrics  string
 }
 
+type lyricsCheckResultMsg struct {
+	trackID   int64
+	hasLyrics bool
+}
+
 func (m *Model) fetchLyricsCmd(artist, title string, trackID int64) tea.Cmd {
 	return func() tea.Msg {
 		l, err := lyrics.Fetch(artist, title)
@@ -40,6 +45,21 @@ func (m *Model) fetchLyricsCmd(artist, title string, trackID int64) tea.Cmd {
 		}
 		return lyricsMsg{trackID: trackID, lyrics: l}
 	}
+}
+
+func (m *Model) checkLyricsBulkCmd(tracks []soundcloud.Track) tea.Cmd {
+	var cmds []tea.Cmd
+	for _, t := range tracks {
+		if !m.lyricsChecked[t.ID] {
+			track := t
+			cmds = append(cmds, func() tea.Msg {
+				l, err := lyrics.Fetch(track.Artist, track.Title)
+				hasLyrics := (err == nil && l != "")
+				return lyricsCheckResultMsg{trackID: track.ID, hasLyrics: hasLyrics}
+			})
+		}
+	}
+	return tea.Batch(cmds...)
 }
 
 func (m *Model) showNotif(text string) {
@@ -422,6 +442,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.searchCursor = 0
 		m.statusMsg = ""
 		m.searchInput.Blur()
+		cmds = append(cmds, m.checkLyricsBulkCmd(msg))
 
 	case streamResolvedMsg:
 		m.statusMsg = ""
@@ -442,6 +463,12 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.radioFetched[msg.track.ID] = true
 				cmds = append(cmds, m.fetchRelatedCmd(msg.track.ID))
 			}
+		}
+
+	case lyricsCheckResultMsg:
+		m.lyricsChecked[msg.trackID] = true
+		if msg.hasLyrics {
+			m.lyricsAvailable[msg.trackID] = true
 		}
 
 	case artworkMsg:

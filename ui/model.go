@@ -78,6 +78,8 @@ type Model struct {
 	errorMsg     string
 	
 	radioFetched map[int64]bool
+	lyricsAvailable map[int64]bool
+	lyricsChecked   map[int64]bool
 	
 	ctx          context.Context
 	cancel       context.CancelFunc
@@ -103,10 +105,12 @@ func NewModel(cfg *config.Config, client *soundcloud.Client) *Model {
 		queue:        q,
 		store:        s,
 		viewState:    ViewSplash,
-		searchInput:  ti,
-		ctx:          ctx,
-		cancel:       cancel,
-		radioFetched: make(map[int64]bool),
+		searchInput:     ti,
+		ctx:             ctx,
+		cancel:          cancel,
+		radioFetched:    make(map[int64]bool),
+		lyricsAvailable: make(map[int64]bool),
+		lyricsChecked:   make(map[int64]bool),
 	}
 }
 

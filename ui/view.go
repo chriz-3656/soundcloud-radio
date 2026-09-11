@@ -167,7 +167,13 @@ func (m Model) View() tea.View {
 					cursor = "▶ "
 					style = selectedItemStyle
 				}
-				line := fmt.Sprintf("%s%02d  %s", cursor, i+1, t.Title)
+				
+				lyricsIcon := ""
+				if m.lyricsAvailable[t.ID] {
+					lyricsIcon = " 📜"
+				}
+				
+				line := fmt.Sprintf("%s%02d  %s%s", cursor, i+1, t.Title, lyricsIcon)
 				if len(line) > mainWidth - 4 {
 					line = line[:mainWidth-7] + "..."
 				}
@@ -206,7 +212,13 @@ func (m Model) View() tea.View {
 					cursor = "▶ "
 					style = selectedItemStyle
 				}
-				line := fmt.Sprintf("%s%02d  %s", cursor, i+1, t.Title)
+				
+				lyricsIcon := ""
+				if m.lyricsAvailable[t.ID] {
+					lyricsIcon = " 📜"
+				}
+				
+				line := fmt.Sprintf("%s%02d  %s%s", cursor, i+1, t.Title, lyricsIcon)
 				if len(line) > mainWidth - 4 {
 					line = line[:mainWidth-7] + "..."
 				}
@@ -239,7 +251,13 @@ func (m Model) View() tea.View {
 					cursor = "▶ "
 					style = selectedItemStyle
 				}
-				line := fmt.Sprintf("%s%s", cursor, t.Title)
+				
+				lyricsIcon := ""
+				if m.lyricsAvailable[t.ID] {
+					lyricsIcon = " 📜"
+				}
+				
+				line := fmt.Sprintf("%s%s%s", cursor, t.Title, lyricsIcon)
 				if len(line) > mainWidth - 4 { line = line[:mainWidth-7] + "..." }
 				mb.WriteString(style.Width(mainWidth-2).Render(line) + "\n")
 			}
@@ -266,7 +284,13 @@ func (m Model) View() tea.View {
 					cursor = "▶ "
 					style = selectedItemStyle
 				}
-				line := fmt.Sprintf("%s%s", cursor, h.Track.Title)
+				
+				lyricsIcon := ""
+				if m.lyricsAvailable[h.Track.ID] {
+					lyricsIcon = " 📜"
+				}
+				
+				line := fmt.Sprintf("%s%s%s", cursor, h.Track.Title, lyricsIcon)
 				if len(line) > mainWidth - 4 { line = line[:mainWidth-7] + "..." }
 				mb.WriteString(style.Width(mainWidth-2).Render(line) + "\n")
 			}
