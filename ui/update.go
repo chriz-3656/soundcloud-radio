@@ -404,12 +404,16 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		
 		if m.player.State() == player.StatePlaying {
-			m.visualizerBars = make([]int, 16)
+			vizWidth := m.width - 4
+			if vizWidth < 1 { vizWidth = 1 }
+			m.visualizerBars = make([]int, vizWidth)
 			for i := range m.visualizerBars {
 				m.visualizerBars[i] = rand.Intn(8)
 			}
 		} else {
-			m.visualizerBars = make([]int, 16)
+			vizWidth := m.width - 4
+			if vizWidth < 1 { vizWidth = 1 }
+			m.visualizerBars = make([]int, vizWidth)
 		}
 
 		if m.currentTrack != nil && m.player.State() == player.StateStopped && m.statusMsg == "" {
