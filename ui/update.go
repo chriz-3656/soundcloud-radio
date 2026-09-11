@@ -110,7 +110,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.player.SetVolume(100)
 				m.showNotif("Unmuted")
 			}
-		case "l":
+		case "l", "L":
 			if m.hasLyrics {
 				if m.viewState == ViewLyrics {
 					m.viewState = ViewHome
@@ -120,7 +120,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			} else {
 				m.showNotif("No lyrics available for this track")
 			}
-		case "f":
+		case "f", "F":
 			if m.currentTrack != nil {
 				if m.store.IsFavorite(m.currentTrack.ID) {
 					m.store.RemoveFavorite(m.currentTrack.ID)
