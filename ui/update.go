@@ -1,8 +1,11 @@
 package ui
 
 import (
-	"math/rand"
 	"fmt"
+	"math/rand"
+	"os/exec"
+	"strings"
+	"time"
 
 	tea "charm.land/bubbletea/v2"
 
@@ -18,6 +21,10 @@ type streamResolvedMsg struct {
 	stream *resolver.ResolvedStream
 }
 type relatedTracksMsg []soundcloud.Track
+
+type setupLogMsg string
+type setupDoneMsg struct{}
+type setupStepMsg int
 
 func (m *Model) showNotif(text string) {
 	m.notification = text
@@ -105,7 +112,9 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch m.viewState {
 		case ViewSplash:
 			if msg.String() == "enter" {
-				m.viewState = ViewHome
+				m.viewState = ViewSetup
+				m.setupLogs = []string{"[*] Initializing environment checks..."}
+				return m, func() tea.Msg { return setupStepMsg(1) }
 			}
 		case ViewSearch:
 			switch msg.String() {
@@ -277,6 +286,49 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 			}
 		}
+
+	case setupStepMsg:
+		if msg == 1 {
+			return m, func() tea.Msg {
+				_, err := exec.LookPath("mpv")
+				if err == nil {
+					return setupLogMsg("[✓] mpv audio backend found")
+				}
+				_, err = exec.LookPath("vlc")
+				if err == nil {
+					return setupLogMsg("[✓] vlc audio backend found (fallback)")
+				}
+				return setupLogMsg("[!] No audio backend found (Please install mpv for the best experience!)")
+			}
+		} else if msg == 2 {
+			m.setupLogs = append(m.setupLogs, "[*] Checking yt-dlp stream resolver...")
+			return m, tea.Tick(time.Millisecond*500, func(time.Time) tea.Msg { return setupStepMsg(3) })
+		} else if msg == 3 {
+			return m, func() tea.Msg {
+				_, err := resolver.EnsureYTDLP(m.ctx)
+				if err != nil {
+					return setupLogMsg("[✕] Failed to install yt-dlp: " + err.Error())
+				}
+				return setupLogMsg("[✓] yt-dlp resolver ready")
+			}
+		} else if msg == 4 {
+			m.setupLogs = append(m.setupLogs, "\nAll checks completed. Booting UI...")
+			return m, tea.Tick(time.Second*1, func(time.Time) tea.Msg { return setupDoneMsg{} })
+		}
+
+	case setupLogMsg:
+		m.setupLogs = append(m.setupLogs, string(msg))
+		if strings.Contains(string(msg), "audio backend") {
+			return m, func() tea.Msg { return setupStepMsg(2) }
+		}
+		if strings.Contains(string(msg), "yt-dlp resolver") || strings.Contains(string(msg), "Failed to install") {
+			return m, func() tea.Msg { return setupStepMsg(4) }
+		}
+
+	case setupDoneMsg:
+		m.setupDone = true
+		m.viewState = ViewHome
+		return m, nil
 
 	case tea.WindowSizeMsg:
 		m.width = msg.Width

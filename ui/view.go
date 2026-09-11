@@ -53,6 +53,24 @@ func (m Model) View() tea.View {
 		return v
 	}
 
+	if m.viewState == ViewSetup {
+		var sb strings.Builder
+		sb.WriteString(titleStyle.Render("SYSTEM INITIALIZATION") + "\n\n")
+		for _, log := range m.setupLogs {
+			if strings.Contains(log, "[✓]") {
+				sb.WriteString(successStyle.Render(log) + "\n")
+			} else if strings.Contains(log, "[!]") || strings.Contains(log, "[✕]") {
+				sb.WriteString(errorStyle.Render(log) + "\n")
+			} else {
+				sb.WriteString(itemStyle.Render(log) + "\n")
+			}
+		}
+		
+		v := tea.NewView(lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, panelBorderStyle.Width(60).Height(20).Render(sb.String())))
+		v.AltScreen = true
+		return v
+	}
+
 	if m.width < 60 || m.height < 15 {
 		// Small terminal fallback
 		var sb strings.Builder

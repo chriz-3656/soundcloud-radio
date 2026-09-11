@@ -66,7 +66,7 @@ func (r *YTDLPResolver) Resolve(ctx context.Context, track soundcloud.Track, coo
 }
 
 func (r *YTDLPResolver) resolveWithCookies(ctx context.Context, trackURL, cookies string) (string, error) {
-	binPath, err := ensureYTDLP(ctx)
+	binPath, err := EnsureYTDLP(ctx)
 	if err != nil {
 		return "", err
 	}
@@ -95,7 +95,7 @@ func (r *YTDLPResolver) resolveWithCookies(ctx context.Context, trackURL, cookie
 	return strings.TrimSpace(lines[0]), nil
 }
 
-func ensureYTDLP(ctx context.Context) (string, error) {
+func EnsureYTDLP(ctx context.Context) (string, error) {
 	path, err := exec.LookPath("yt-dlp")
 	if err == nil {
 		return path, nil // Found in system PATH

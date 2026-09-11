@@ -21,6 +21,7 @@ type ViewState int
 
 const (
 	ViewSplash ViewState = iota
+	ViewSetup
 	ViewHome
 	ViewSearch
 	ViewFavorites
@@ -41,6 +42,10 @@ type Model struct {
 	
 	width, height int
 	
+	// Setup state
+	setupLogs    []string
+	setupDone    bool
+
 	// Search state
 	searchInput textinput.Model
 	searchResults []soundcloud.Track
