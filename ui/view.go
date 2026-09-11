@@ -71,7 +71,7 @@ func (m Model) View() tea.View {
 		return v
 	}
 
-	if m.width < 60 || m.height < 15 {
+	if m.width < 85 || m.height < 20 {
 		// Small terminal fallback
 		var sb strings.Builder
 		sb.WriteString(brandStyle.Render("SOUNDCLOUD RADIO") + "\n\n")
