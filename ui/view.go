@@ -93,7 +93,7 @@ func (m Model) View() tea.View {
 	}
 
 	sidebarWidth := 22
-	playbarHeight := 5
+	playbarHeight := 4
 	nowPlayingWidth := 35
 	mainWidth := m.width - sidebarWidth - nowPlayingWidth - 6
 	mainHeight := m.height - playbarHeight - 2
@@ -419,12 +419,7 @@ Projects: NEURO-RECON, ResuMetric, WebDock, Sky Realms SMP.`
 		np.WriteString(mutedStyle.Render("Nothing is playing."))
 	}
 
-	nowPlayingContent := panelBorderStyle.Width(nowPlayingWidth).Height(mainHeight).Render(np.String())
-
-	// === 4. PLAYBAR (BOTTOM) ===
-	var pb strings.Builder
-	
-	// Visualizer block (full width)
+	// Visualizer block
 	vizChars := []string{" ", "▂", "▃", "▄", "▅", "▆", "▇", "█"}
 	var vizBuilder strings.Builder
 	for _, val := range m.visualizerBars {
@@ -432,10 +427,16 @@ Projects: NEURO-RECON, ResuMetric, WebDock, Sky Realms SMP.`
 		if val > 7 { val = 7 }
 		vizBuilder.WriteString(vizChars[val])
 	}
-	// The visualizer might have more/less bars than width, but it's generated dynamically
-	// We'll just truncate or let it be (the array size dictates the width)
-	
-	pb.WriteString(statusStyle.Render(vizBuilder.String()) + "\n")
+	vizStr := statusStyle.Render(vizBuilder.String())
+
+	// Push visualizer to the bottom of the panel
+	npTop := lipgloss.NewStyle().Height(mainHeight - 2).Render(np.String())
+	npFull := lipgloss.JoinVertical(lipgloss.Top, npTop, vizStr)
+
+	nowPlayingContent := panelBorderStyle.Width(nowPlayingWidth).Height(mainHeight).Render(npFull)
+
+	// === 4. PLAYBAR (BOTTOM) ===
+	var pb strings.Builder
 	
 	stateIcon := "▶"
 	if m.player.State() == player.StatePaused {

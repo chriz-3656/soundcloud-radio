@@ -404,15 +404,13 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		
 		if m.player.State() == player.StatePlaying {
-			vizWidth := m.width - 4
-			if vizWidth < 1 { vizWidth = 1 }
+			vizWidth := 31
 			m.visualizerBars = make([]int, vizWidth)
 			for i := range m.visualizerBars {
 				m.visualizerBars[i] = rand.Intn(8)
 			}
 		} else {
-			vizWidth := m.width - 4
-			if vizWidth < 1 { vizWidth = 1 }
+			vizWidth := 31
 			m.visualizerBars = make([]int, vizWidth)
 		}
 
