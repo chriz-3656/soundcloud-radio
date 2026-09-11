@@ -65,8 +65,9 @@ type Model struct {
 	visualizerBars []int
 	
 	// Playback state
-	currentTrack *soundcloud.Track
-	isPlaying    bool
+	currentTrack   *soundcloud.Track
+	currentArtwork string
+	isPlaying      bool
 	
 	// Global status
 	statusMsg    string

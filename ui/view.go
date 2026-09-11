@@ -323,7 +323,11 @@ Projects: NEURO-RECON, ResuMetric, WebDock, Sky Realms SMP.`
 	var np strings.Builder
 	np.WriteString(titleStyle.Render("NOW PLAYING") + "\n\n")
 	
-	np.WriteString(renderArtwork() + "\n\n")
+	if m.currentArtwork != "" {
+		np.WriteString(m.currentArtwork + "\n\n")
+	} else {
+		np.WriteString(renderArtwork() + "\n\n")
+	}
 	
 	if m.currentTrack != nil {
 		t := m.currentTrack.Title

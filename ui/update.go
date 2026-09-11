@@ -385,14 +385,28 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.searchInput.Blur()
 
 	case streamResolvedMsg:
+		m.statusMsg = ""
 		m.currentTrack = &msg.track
+		m.currentArtwork = "" // clear previous artwork
 		if err := m.player.Play(m.ctx, *msg.stream, msg.track); err != nil {
-			m.errorMsg = "Playback error: " + err.Error()
-			m.currentTrack = nil
-			m.statusMsg = ""
-		} else {
-			m.statusMsg = ""
-			m.errorMsg = ""
+			m.showNotif("Playback error: " + err.Error())
+		}
+		cmds = append(cmds, fetchArtworkCmd(msg.track.ID, msg.track.ArtworkURL))
+		
+		// Add to history
+		m.store.AddHistory(*m.currentTrack)
+		
+		// If radio mode is on and we are near the end of queue
+		if m.cfg.Radio && m.queue.Len() < 2 {
+			if !m.radioFetched[msg.track.ID] {
+				m.radioFetched[msg.track.ID] = true
+				cmds = append(cmds, m.fetchRelatedCmd(msg.track.ID))
+			}
+		}
+
+	case artworkMsg:
+		if m.currentTrack != nil && m.currentTrack.ID == msg.trackID && msg.art != "" {
+			m.currentArtwork = msg.art
 		}
 
 	case relatedTracksMsg:
