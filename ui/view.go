@@ -271,6 +271,29 @@ func (m Model) View() tea.View {
 				mb.WriteString(style.Width(mainWidth-2).Render(line) + "\n")
 			}
 		}
+
+	case ViewLyrics:
+		mb.WriteString(titleStyle.Render("LYRICS") + "\n\n")
+		if m.currentLyrics == "" {
+			mb.WriteString(mutedStyle.Render("No lyrics available."))
+		} else {
+			lines := strings.Split(m.currentLyrics, "\n")
+			itemsPerPage := mainHeight - 8
+			if itemsPerPage < 1 { itemsPerPage = 1 }
+			startIndex := 0
+			if m.lyricsCursor >= itemsPerPage { startIndex = m.lyricsCursor - itemsPerPage + 1 }
+			endIndex := startIndex + itemsPerPage
+			if endIndex > len(lines) { endIndex = len(lines) }
+
+			for i := startIndex; i < endIndex; i++ {
+				l := lines[i]
+				style := itemStyle
+				if i == m.lyricsCursor {
+					style = selectedItemStyle
+				}
+				mb.WriteString(style.Width(mainWidth-2).Render(l) + "\n")
+			}
+		}
 		
 	case ViewHelp:
 		mb.WriteString(titleStyle.Render("HELP & COMMANDS") + "\n\n")
@@ -360,6 +383,12 @@ Projects: NEURO-RECON, ResuMetric, WebDock, Sky Realms SMP.`
 			np.WriteString(brandStyle.Render("♥ Favorited") + "\n\n")
 		} else {
 			np.WriteString("\n")
+		}
+		
+		if m.hasLyrics {
+			np.WriteString(infoStyle.Render("[l] Show Lyrics") + "\n\n")
+		} else {
+			np.WriteString("\n\n")
 		}
 		
 		// Visualizer block

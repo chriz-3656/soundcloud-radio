@@ -26,6 +26,7 @@ const (
 	ViewSearch
 	ViewFavorites
 	ViewHistory
+	ViewLyrics
 	ViewSettings
 	ViewHelp
 )
@@ -52,14 +53,15 @@ type Model struct {
 	searchCursor  int
 	isSearching   bool
 	
-	// Queue state
-	queueCursor int
+	// UI State
+	queueCursor  int
+	favCursor    int
+	histCursor   int
+	lyricsCursor int
 	
-	// Favorites state
-	favCursor int
-	
-	// History state
-	histCursor int
+	// Notification
+	notification string
+	notifTimer   int
 
 	// Visualizer
 	visualizerBars []int
@@ -67,13 +69,13 @@ type Model struct {
 	// Playback state
 	currentTrack   *soundcloud.Track
 	currentArtwork string
+	currentLyrics  string
+	hasLyrics      bool
 	isPlaying      bool
 	
 	// Global status
 	statusMsg    string
 	errorMsg     string
-	notification string
-	notifTimer   int
 	
 	radioFetched map[int64]bool
 	

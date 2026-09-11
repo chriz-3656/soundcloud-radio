@@ -9,6 +9,7 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 
+	"soundcloud-radio/internal/lyrics"
 	"soundcloud-radio/internal/player"
 	"soundcloud-radio/internal/resolver"
 	"soundcloud-radio/internal/soundcloud"
@@ -25,6 +26,21 @@ type relatedTracksMsg []soundcloud.Track
 type setupLogMsg string
 type setupDoneMsg struct{}
 type setupStepMsg int
+
+type lyricsMsg struct {
+	trackID int64
+	lyrics  string
+}
+
+func (m *Model) fetchLyricsCmd(artist, title string, trackID int64) tea.Cmd {
+	return func() tea.Msg {
+		l, err := lyrics.Fetch(artist, title)
+		if err != nil {
+			return lyricsMsg{trackID: trackID, lyrics: ""}
+		}
+		return lyricsMsg{trackID: trackID, lyrics: l}
+	}
+}
 
 func (m *Model) showNotif(text string) {
 	m.notification = text
@@ -93,6 +109,16 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			} else {
 				m.player.SetVolume(100)
 				m.showNotif("Unmuted")
+			}
+		case "l":
+			if m.hasLyrics {
+				if m.viewState == ViewLyrics {
+					m.viewState = ViewHome
+				} else {
+					m.viewState = ViewLyrics
+				}
+			} else {
+				m.showNotif("No lyrics available for this track")
 			}
 		case "f":
 			if m.currentTrack != nil {
@@ -250,6 +276,19 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.showNotif("✓ Added to queue")
 				}
 			}
+
+		case ViewLyrics:
+			lines := strings.Split(m.currentLyrics, "\n")
+			switch msg.String() {
+			case "j", "down":
+				if m.lyricsCursor < len(lines)-1 {
+					m.lyricsCursor++
+				}
+			case "k", "up":
+				if m.lyricsCursor > 0 {
+					m.lyricsCursor--
+				}
+			}
 		}
 
 	case tea.MouseClickMsg:
@@ -392,6 +431,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.showNotif("Playback error: " + err.Error())
 		}
 		cmds = append(cmds, fetchArtworkCmd(msg.track.ID, msg.track.ArtworkURL))
+		cmds = append(cmds, m.fetchLyricsCmd(msg.track.Artist, msg.track.Title, msg.track.ID))
 		
 		// Add to history
 		m.store.AddHistory(*m.currentTrack)
@@ -407,6 +447,17 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case artworkMsg:
 		if m.currentTrack != nil && m.currentTrack.ID == msg.trackID && msg.art != "" {
 			m.currentArtwork = msg.art
+		}
+
+	case lyricsMsg:
+		if m.currentTrack != nil && m.currentTrack.ID == msg.trackID {
+			if msg.lyrics != "" {
+				m.currentLyrics = msg.lyrics
+				m.hasLyrics = true
+			} else {
+				m.currentLyrics = ""
+				m.hasLyrics = false
+			}
 		}
 
 	case relatedTracksMsg:
