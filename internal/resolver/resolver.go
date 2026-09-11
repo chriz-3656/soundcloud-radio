@@ -27,22 +27,24 @@ func NewYTDLPResolver() *YTDLPResolver {
 
 func (r *YTDLPResolver) Resolve(ctx context.Context, track soundcloud.Track, cookieMode string) (*ResolvedStream, error) {
 	if cookieMode == "auto" {
+		var errs []string
+		
 		// Try firefox
 		url, err := r.resolveWithCookies(ctx, track.PermalinkURL, "firefox")
-		if err == nil && url != "" {
-			return &ResolvedStream{URL: url}, nil
-		}
+		if err == nil && url != "" { return &ResolvedStream{URL: url}, nil }
+		if err != nil { errs = append(errs, "firefox: "+err.Error()) }
+
 		// Try chrome
 		url, err = r.resolveWithCookies(ctx, track.PermalinkURL, "chrome")
-		if err == nil && url != "" {
-			return &ResolvedStream{URL: url}, nil
-		}
+		if err == nil && url != "" { return &ResolvedStream{URL: url}, nil }
+		if err != nil { errs = append(errs, "chrome: "+err.Error()) }
+
 		// Try none
 		url, err = r.resolveWithCookies(ctx, track.PermalinkURL, "")
-		if err == nil && url != "" {
-			return &ResolvedStream{URL: url}, nil
-		}
-		return nil, errors.New("all cookie strategies failed to resolve stream")
+		if err == nil && url != "" { return &ResolvedStream{URL: url}, nil }
+		if err != nil { errs = append(errs, "none: "+err.Error()) }
+
+		return nil, fmt.Errorf("resolution failed: %s", strings.Join(errs, " | "))
 	} else if cookieMode != "none" && cookieMode != "" {
 		url, err := r.resolveWithCookies(ctx, track.PermalinkURL, cookieMode)
 		if err == nil && url != "" {
