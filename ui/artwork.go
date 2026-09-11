@@ -23,13 +23,24 @@ func fetchArtworkCmd(trackID int64, url string) tea.Cmd {
 			return artworkMsg{trackID: trackID, art: ""}
 		}
 
-		// SoundCloud returns -large (100x100). We can request -t200x200 or just use large.
-		url = strings.Replace(url, "-large.jpg", "-t200x200.jpg", 1)
-
 		client := &http.Client{Timeout: 5 * time.Second}
 		resp, err := client.Get(url)
-		if err != nil {
-			return artworkMsg{trackID: trackID, art: ""}
+		if err != nil || resp.StatusCode != 200 {
+			if err == nil { resp.Body.Close() }
+			
+			// Try fallback
+			if strings.Contains(url, "-large.jpg") {
+				url2 := strings.Replace(url, "-large.jpg", "-t500x500.jpg", 1)
+				resp2, err2 := client.Get(url2)
+				if err2 == nil && resp2.StatusCode == 200 {
+					resp = resp2
+				} else {
+					if err2 == nil { resp2.Body.Close() }
+					return artworkMsg{trackID: trackID, art: ""}
+				}
+			} else {
+				return artworkMsg{trackID: trackID, art: ""}
+			}
 		}
 		defer resp.Body.Close()
 
