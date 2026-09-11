@@ -23,7 +23,7 @@ func Fetch(artist, title string) (string, error) {
 	query := url.QueryEscape(fmt.Sprintf("%s %s", artist, title))
 	apiURL := fmt.Sprintf("https://lrclib.net/api/search?q=%s", query)
 
-	client := &http.Client{Timeout: 5 * time.Second}
+	client := &http.Client{Timeout: 10 * time.Second}
 	req, _ := http.NewRequest("GET", apiURL, nil)
 	req.Header.Set("User-Agent", "SoundCloud-Radio-TUI/1.0 (https://github.com/chriz-3656/soundcloud-radio)")
 
