@@ -30,7 +30,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		if m.searchInput.Focused() && msg.String() != "enter" && msg.String() != "esc" {
+		if m.searchInput.Focused() && msg.String() != "enter" && msg.String() != "esc" && msg.String() != "ctrl+c" {
 			m.searchInput, cmd = m.searchInput.Update(msg)
 			return m, cmd
 		}
