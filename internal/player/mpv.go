@@ -1,5 +1,7 @@
 package player
 
+import "soundcloud-radio/internal/models"
+
 import (
 	"bufio"
 	"context"
@@ -38,7 +40,7 @@ func NewMPVPlayer() (*MPVPlayer, error) {
 	}, nil
 }
 
-func (m *MPVPlayer) Play(ctx context.Context, stream resolver.ResolvedStream, metadata soundcloud.Track) error {
+func (m *MPVPlayer) Play(ctx context.Context, stream resolver.ResolvedStream, metadata models.Track) error {
 	m.Stop()
 
 	m.mu.Lock()

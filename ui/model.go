@@ -1,5 +1,7 @@
 package ui
 
+import "soundcloud-radio/internal/models"
+
 import (
 	"context"
 
@@ -13,6 +15,7 @@ import (
 	"soundcloud-radio/internal/player"
 	"soundcloud-radio/internal/queue"
 	"soundcloud-radio/internal/resolver"
+	"soundcloud-radio/internal/provider"
 	"soundcloud-radio/internal/soundcloud"
 	"soundcloud-radio/internal/storage"
 )
@@ -32,12 +35,14 @@ const (
 )
 
 type Model struct {
-	cfg         *config.Config
-	client      *soundcloud.Client
-	player      player.Player
-	resolver    resolver.Resolver
-	queue       *queue.Queue
-	store       *storage.Store
+	cfg            *config.Config
+	providers      []provider.Provider
+	providerIndex  int
+	activeProvider provider.Provider
+	player         player.Player
+	resolver       resolver.Resolver
+	queue          *queue.Queue
+	store          *storage.Store
 	
 	viewState   ViewState
 	
@@ -49,7 +54,7 @@ type Model struct {
 
 	// Search state
 	searchInput textinput.Model
-	searchResults []soundcloud.Track
+	searchResults []models.Track
 	searchCursor  int
 	isSearching   bool
 	
@@ -67,7 +72,7 @@ type Model struct {
 	visualizerBars []int
 	
 	// Playback state
-	currentTrack   *soundcloud.Track
+	currentTrack   *models.Track
 	currentArtwork string
 	currentLyrics  string
 	hasLyrics      bool
@@ -77,40 +82,42 @@ type Model struct {
 	statusMsg    string
 	errorMsg     string
 	
-	radioFetched map[int64]bool
-	lyricsAvailable map[int64]bool
-	lyricsChecked   map[int64]bool
+	radioFetched    map[string]bool
+	lyricsAvailable map[string]bool
+	lyricsChecked   map[string]bool
 	
 	ctx          context.Context
 	cancel       context.CancelFunc
 }
 
-func NewModel(cfg *config.Config, client *soundcloud.Client) *Model {
+func NewModel(cfg *config.Config, providers []provider.Provider) *Model {
 	p, _ := player.New()
 	r := resolver.NewYTDLPResolver()
 	q := queue.NewQueue(cfg.HistoryLimit)
 	s, _ := storage.NewStore()
 	
 	ti := textinput.New()
-	ti.Placeholder = "Search SoundCloud..."
+	ti.Placeholder = "Search " + providers[0].GetName() + "..."
 	ti.Focus()
 	
 	ctx, cancel := context.WithCancel(context.Background())
 	
 	return &Model{
-		cfg:          cfg,
-		client:       client,
-		player:       p,
-		resolver:     r,
-		queue:        q,
-		store:        s,
-		viewState:    ViewSplash,
+		cfg:             cfg,
+		providers:       providers,
+		providerIndex:   0,
+		activeProvider:  providers[0],
+		player:          p,
+		resolver:        r,
+		queue:           q,
+		store:           s,
+		viewState:       ViewSplash,
 		searchInput:     ti,
 		ctx:             ctx,
 		cancel:          cancel,
-		radioFetched:    make(map[int64]bool),
-		lyricsAvailable: make(map[int64]bool),
-		lyricsChecked:   make(map[int64]bool),
+		radioFetched:    make(map[string]bool),
+		lyricsAvailable: make(map[string]bool),
+		lyricsChecked:   make(map[string]bool),
 	}
 }
 

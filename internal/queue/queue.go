@@ -1,5 +1,7 @@
 package queue
 
+import "soundcloud-radio/internal/models"
+
 import (
 	"sync"
 	"math/rand"
@@ -9,8 +11,8 @@ import (
 
 type Queue struct {
 	mu           sync.Mutex
-	items        []soundcloud.Track
-	history      []soundcloud.Track
+	items        []models.Track
+	history      []models.Track
 	historyLimit int
 	playedIds    map[int64]bool
 }
@@ -20,20 +22,20 @@ func NewQueue(historyLimit int) *Queue {
 		historyLimit = 5000
 	}
 	return &Queue{
-		items:        make([]soundcloud.Track, 0),
-		history:      make([]soundcloud.Track, 0),
+		items:        make([]models.Track, 0),
+		history:      make([]models.Track, 0),
 		historyLimit: historyLimit,
 		playedIds:    make(map[int64]bool),
 	}
 }
 
-func (q *Queue) Add(t soundcloud.Track) {
+func (q *Queue) Add(t models.Track) {
 	q.mu.Lock()
 	defer q.mu.Unlock()
 	q.items = append(q.items, t)
 }
 
-func (q *Queue) AddIfNotPlayed(t soundcloud.Track) bool {
+func (q *Queue) AddIfNotPlayed(t models.Track) bool {
 	q.mu.Lock()
 	defer q.mu.Unlock()
 	if q.playedIds[t.ID] {
@@ -48,11 +50,11 @@ func (q *Queue) AddIfNotPlayed(t soundcloud.Track) bool {
 	return true
 }
 
-func (q *Queue) Pop() (soundcloud.Track, bool) {
+func (q *Queue) Pop() (models.Track, bool) {
 	q.mu.Lock()
 	defer q.mu.Unlock()
 	if len(q.items) == 0 {
-		return soundcloud.Track{}, false
+		return models.Track{}, false
 	}
 	item := q.items[0]
 	q.items = q.items[1:]
@@ -66,11 +68,11 @@ func (q *Queue) Pop() (soundcloud.Track, bool) {
 	return item, true
 }
 
-func (q *Queue) Peek() (soundcloud.Track, bool) {
+func (q *Queue) Peek() (models.Track, bool) {
 	q.mu.Lock()
 	defer q.mu.Unlock()
 	if len(q.items) == 0 {
-		return soundcloud.Track{}, false
+		return models.Track{}, false
 	}
 	return q.items[0], true
 }
@@ -84,22 +86,22 @@ func (q *Queue) Len() int {
 func (q *Queue) Clear() {
 	q.mu.Lock()
 	defer q.mu.Unlock()
-	q.items = make([]soundcloud.Track, 0)
+	q.items = make([]models.Track, 0)
 }
 
-func (q *Queue) Items() []soundcloud.Track {
+func (q *Queue) Items() []models.Track {
 	q.mu.Lock()
 	defer q.mu.Unlock()
-	itemsCopy := make([]soundcloud.Track, len(q.items))
+	itemsCopy := make([]models.Track, len(q.items))
 	copy(itemsCopy, q.items)
 	return itemsCopy
 }
 
-func (q *Queue) LastPlayed() (soundcloud.Track, bool) {
+func (q *Queue) LastPlayed() (models.Track, bool) {
 	q.mu.Lock()
 	defer q.mu.Unlock()
 	if len(q.history) == 0 {
-		return soundcloud.Track{}, false
+		return models.Track{}, false
 	}
 	return q.history[len(q.history)-1], true
 }
@@ -128,10 +130,10 @@ func (q *Queue) MoveDown(index int) {
 	}
 }
 
-func (q *Queue) PlayNext(track soundcloud.Track) {
+func (q *Queue) PlayNext(track models.Track) {
 	q.mu.Lock()
 	defer q.mu.Unlock()
-	q.items = append([]soundcloud.Track{track}, q.items...)
+	q.items = append([]models.Track{track}, q.items...)
 }
 
 func (q *Queue) Shuffle() {

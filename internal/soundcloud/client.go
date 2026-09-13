@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/url"
 	"time"
+	"soundcloud-radio/internal/models"
 )
 
 type Client struct {
@@ -27,6 +28,10 @@ func NewClient(baseURL, clientID string) *Client {
 			Timeout: 15 * time.Second,
 		},
 	}
+}
+
+func (c *Client) GetName() string {
+	return "SoundCloud"
 }
 
 func (c *Client) doRequest(ctx context.Context, path string, query url.Values) ([]byte, error) {
@@ -62,7 +67,7 @@ func (c *Client) doRequest(ctx context.Context, path string, query url.Values) (
 	return io.ReadAll(resp.Body)
 }
 
-func (c *Client) SearchTracks(ctx context.Context, q string, limit int) ([]Track, error) {
+func (c *Client) SearchTracks(ctx context.Context, q string, limit int) ([]models.Track, error) {
 	query := url.Values{}
 	query.Set("q", q)
 	query.Set("limit", fmt.Sprint(limit))
@@ -77,10 +82,10 @@ func (c *Client) SearchTracks(ctx context.Context, q string, limit int) ([]Track
 		return nil, err
 	}
 	
-	var tracks []Track
+	var tracks []models.Track
 	for _, t := range sr.Collection {
-		tracks = append(tracks, Track{
-			ID:           t.ID,
+		tracks = append(tracks, models.Track{
+			ID:           fmt.Sprint(t.ID),
 			Title:        t.Title,
 			Artist:       t.User.Username,
 			Duration:     t.Duration,
@@ -92,11 +97,11 @@ func (c *Client) SearchTracks(ctx context.Context, q string, limit int) ([]Track
 	return tracks, nil
 }
 
-func (c *Client) GetRelatedTracks(ctx context.Context, trackID int64, limit int) ([]Track, error) {
+func (c *Client) GetRelatedTracks(ctx context.Context, trackID string, limit int) ([]models.Track, error) {
 	query := url.Values{}
 	query.Set("limit", fmt.Sprint(limit))
 	
-	path := fmt.Sprintf("/tracks/%d/related", trackID)
+	path := fmt.Sprintf("/tracks/%s/related", trackID)
 	body, err := c.doRequest(ctx, path, query)
 	if err != nil {
 		return nil, err
@@ -107,10 +112,10 @@ func (c *Client) GetRelatedTracks(ctx context.Context, trackID int64, limit int)
 		return nil, err
 	}
 	
-	var tracks []Track
+	var tracks []models.Track
 	for _, t := range sr.Collection {
-		tracks = append(tracks, Track{
-			ID:           t.ID,
+		tracks = append(tracks, models.Track{
+			ID:           fmt.Sprint(t.ID),
 			Title:        t.Title,
 			Artist:       t.User.Username,
 			Duration:     t.Duration,

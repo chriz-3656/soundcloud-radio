@@ -1,5 +1,7 @@
 package resolver
 
+import "soundcloud-radio/internal/models"
+
 import (
 	"bytes"
 	"context"
@@ -21,7 +23,7 @@ type ResolvedStream struct {
 }
 
 type Resolver interface {
-	Resolve(ctx context.Context, track soundcloud.Track, cookieMode string) (*ResolvedStream, error)
+	Resolve(ctx context.Context, track models.Track, cookieMode string) (*ResolvedStream, error)
 }
 
 type YTDLPResolver struct{}
@@ -30,7 +32,7 @@ func NewYTDLPResolver() *YTDLPResolver {
 	return &YTDLPResolver{}
 }
 
-func (r *YTDLPResolver) Resolve(ctx context.Context, track soundcloud.Track, cookieMode string) (*ResolvedStream, error) {
+func (r *YTDLPResolver) Resolve(ctx context.Context, track models.Track, cookieMode string) (*ResolvedStream, error) {
 	if cookieMode == "auto" {
 		var errs []string
 		

@@ -1,5 +1,7 @@
 package queue
 
+import "soundcloud-radio/internal/models"
+
 import (
 	"sync"
 	"testing"
@@ -14,7 +16,7 @@ func TestQueueConcurrent(t *testing.T) {
 		wg.Add(1)
 		go func(id int) {
 			defer wg.Done()
-			q.Add(soundcloud.Track{ID: int64(id)})
+			q.Add(models.Track{ID: string(id)})
 			q.Pop()
 			q.Len()
 		}(i)

@@ -1,5 +1,7 @@
 package storage
 
+import "soundcloud-radio/internal/models"
+
 import (
 	"encoding/json"
 	"os"
@@ -11,12 +13,12 @@ import (
 )
 
 type HistoryItem struct {
-	Track     soundcloud.Track `json:"track"`
+	Track     models.Track `json:"track"`
 	PlayedAt  time.Time        `json:"played_at"`
 }
 
 type StoreData struct {
-	Favorites []soundcloud.Track `json:"favorites"`
+	Favorites []models.Track `json:"favorites"`
 	History   []HistoryItem      `json:"history"`
 }
 
@@ -39,7 +41,7 @@ func NewStore() (*Store, error) {
 	s := &Store{
 		path: path,
 		Data: StoreData{
-			Favorites: make([]soundcloud.Track, 0),
+			Favorites: make([]models.Track, 0),
 			History:   make([]HistoryItem, 0),
 		},
 	}
@@ -70,7 +72,7 @@ func (s *Store) Save() error {
 	return os.WriteFile(s.path, b, 0644)
 }
 
-func (s *Store) AddFavorite(t soundcloud.Track) {
+func (s *Store) AddFavorite(t models.Track) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	for _, f := range s.Data.Favorites {
@@ -85,7 +87,7 @@ func (s *Store) AddFavorite(t soundcloud.Track) {
 func (s *Store) RemoveFavorite(id int64) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	var updated []soundcloud.Track
+	var updated []models.Track
 	for _, f := range s.Data.Favorites {
 		if f.ID != id {
 			updated = append(updated, f)
@@ -106,7 +108,7 @@ func (s *Store) IsFavorite(id int64) bool {
 	return false
 }
 
-func (s *Store) AddHistory(t soundcloud.Track) {
+func (s *Store) AddHistory(t models.Track) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	
@@ -125,10 +127,10 @@ func (s *Store) GetHistory() []HistoryItem {
 	return hist
 }
 
-func (s *Store) GetFavorites() []soundcloud.Track {
+func (s *Store) GetFavorites() []models.Track {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
-	favs := make([]soundcloud.Track, len(s.Data.Favorites))
+	favs := make([]models.Track, len(s.Data.Favorites))
 	copy(favs, s.Data.Favorites)
 	return favs
 }

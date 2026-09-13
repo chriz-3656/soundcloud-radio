@@ -1,5 +1,7 @@
 package ui
 
+import "soundcloud-radio/internal/models"
+
 import (
 	"fmt"
 	"math/rand"
@@ -15,20 +17,20 @@ import (
 	"soundcloud-radio/internal/soundcloud"
 )
 
-type searchResultMsg []soundcloud.Track
+type searchResultMsg []models.Track
 type errMsg error
 type streamResolvedMsg struct {
-	track  soundcloud.Track
+	track  models.Track
 	stream *resolver.ResolvedStream
 }
-type relatedTracksMsg []soundcloud.Track
+type relatedTracksMsg []models.Track
 
 type setupLogMsg string
 type setupDoneMsg struct{}
 type setupStepMsg int
 
 type lyricsMsg struct {
-	trackID int64
+	trackID string
 	lyrics  string
 }
 
@@ -37,7 +39,7 @@ type lyricsCheckResultMsg struct {
 	hasLyrics bool
 }
 
-func (m *Model) fetchLyricsCmd(artist, title string, trackID int64) tea.Cmd {
+func (m *Model) fetchLyricsCmd(artist, title string, trackID string) tea.Cmd {
 	return func() tea.Msg {
 		l, err := lyrics.Fetch(artist, title)
 		if err != nil {
@@ -47,7 +49,7 @@ func (m *Model) fetchLyricsCmd(artist, title string, trackID int64) tea.Cmd {
 	}
 }
 
-func (m *Model) checkLyricsBulkCmd(tracks []soundcloud.Track) tea.Cmd {
+func (m *Model) checkLyricsBulkCmd(tracks []models.Track) tea.Cmd {
 	var cmds []tea.Cmd
 	for _, t := range tracks {
 		if !m.lyricsChecked[t.ID] {
@@ -130,6 +132,12 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.player.SetVolume(100)
 				m.showNotif("Unmuted")
 			}
+		case "tab":
+			m.providerIndex = (m.providerIndex + 1) % len(m.providers)
+			m.activeProvider = m.providers[m.providerIndex]
+			m.searchInput.Placeholder = "Search " + m.activeProvider.GetName() + "..."
+			m.searchResults = nil
+			m.showNotif("Switched provider to " + m.activeProvider.GetName())
 		case "l", "L":
 			if m.hasLyrics {
 				if m.viewState == ViewLyrics {
@@ -424,7 +432,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		
 		if m.cfg.Radio && m.queue.Len() < m.cfg.QueueSize && m.statusMsg == "" {
-			var seedTrack *soundcloud.Track
+			var seedTrack *models.Track
 			if m.currentTrack != nil {
 				seedTrack = m.currentTrack
 			} else if last, ok := m.queue.LastPlayed(); ok {
@@ -512,7 +520,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m *Model) searchCmd(query string) tea.Cmd {
 	return func() tea.Msg {
-		tracks, err := m.client.SearchTracks(m.ctx, query, 50)
+		tracks, err := m.activeProvider.SearchTracks(m.ctx, query, 50)
 		if err != nil {
 			return errMsg(err)
 		}
@@ -520,7 +528,7 @@ func (m *Model) searchCmd(query string) tea.Cmd {
 	}
 }
 
-func (m *Model) resolveCmd(track soundcloud.Track) tea.Cmd {
+func (m *Model) resolveCmd(track models.Track) tea.Cmd {
 	return func() tea.Msg {
 		stream, err := m.resolver.Resolve(m.ctx, track, m.cfg.CookieMode)
 		if err != nil {
@@ -530,9 +538,9 @@ func (m *Model) resolveCmd(track soundcloud.Track) tea.Cmd {
 	}
 }
 
-func (m *Model) fetchRelatedCmd(trackID int64) tea.Cmd {
+func (m *Model) fetchRelatedCmd(trackID string) tea.Cmd {
 	return func() tea.Msg {
-		tracks, err := m.client.GetRelatedTracks(m.ctx, trackID, m.cfg.QueueSize)
+		tracks, err := m.activeProvider.GetRelatedTracks(m.ctx, trackID, m.cfg.QueueSize)
 		if err != nil {
 			return errMsg(err)
 		}

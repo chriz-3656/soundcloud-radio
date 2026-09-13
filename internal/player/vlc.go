@@ -1,5 +1,7 @@
 package player
 
+import "soundcloud-radio/internal/models"
+
 import (
 	"context"
 	"os/exec"
@@ -24,7 +26,7 @@ func NewVLCPlayer() (*VLCPlayer, error) {
 	}, nil
 }
 
-func (v *VLCPlayer) Play(ctx context.Context, stream resolver.ResolvedStream, metadata soundcloud.Track) error {
+func (v *VLCPlayer) Play(ctx context.Context, stream resolver.ResolvedStream, metadata models.Track) error {
 	v.Stop()
 
 	v.mu.Lock()

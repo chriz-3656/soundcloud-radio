@@ -13,11 +13,11 @@ import (
 )
 
 type artworkMsg struct {
-	trackID int64
+	trackID string
 	art     string
 }
 
-func fetchArtworkCmd(trackID int64, url string) tea.Cmd {
+func fetchArtworkCmd(trackID string, url string) tea.Cmd {
 	return func() tea.Msg {
 		if url == "" {
 			return artworkMsg{trackID: trackID, art: ""}

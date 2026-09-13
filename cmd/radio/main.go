@@ -8,6 +8,8 @@ import (
 	tea "charm.land/bubbletea/v2"
 
 	"soundcloud-radio/internal/config"
+	"soundcloud-radio/internal/provider"
+	"soundcloud-radio/internal/jiosaavn"
 	"soundcloud-radio/internal/soundcloud"
 	"soundcloud-radio/ui"
 )
@@ -18,15 +20,19 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	clientID, err := soundcloud.FetchClientID(ctx)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Failed to fetch client ID: %v\n", err)
-		os.Exit(1)
-	}
+	// Initialize JioSaavn (Primary)
+	jioClient := jiosaavn.NewClient()
 
-	client := soundcloud.NewClient(cfg.APIBase, clientID)
+	// Initialize SoundCloud (Fallback)
+	scClientID, err := soundcloud.FetchClientID(ctx)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Failed to fetch soundcloud client ID: %v\n", err)
+	}
+	scClient := soundcloud.NewClient(cfg.APIBase, scClientID)
 	
-	model := ui.NewModel(cfg, client)
+	providers := []provider.Provider{jioClient, scClient}
+	
+	model := ui.NewModel(cfg, providers)
 
 	p := tea.NewProgram(model)
 	if _, err := p.Run(); err != nil {

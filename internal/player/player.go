@@ -1,5 +1,7 @@
 package player
 
+import "soundcloud-radio/internal/models"
+
 import (
 	"context"
 	"fmt"
@@ -20,7 +22,7 @@ const (
 )
 
 type Player interface {
-	Play(ctx context.Context, stream resolver.ResolvedStream, metadata soundcloud.Track) error
+	Play(ctx context.Context, stream resolver.ResolvedStream, metadata models.Track) error
 	Pause() error
 	Resume() error
 	TogglePause() error
