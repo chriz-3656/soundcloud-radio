@@ -134,7 +134,8 @@ func (m Model) View() tea.View {
 		label string
 		state ViewState
 	}{
-		{"  QUEUE", ViewHome},
+		{"  HOME", ViewHome},
+		{"  QUEUE", ViewQueue},
 		{"  SEARCH", ViewSearch},
 		{"  FAVORITES", ViewFavorites},
 		{"  HISTORY", ViewHistory},
@@ -172,7 +173,7 @@ func (m Model) View() tea.View {
 	}
 
 	switch m.viewState {
-	case ViewHome:
+	case ViewQueue:
 		mb.WriteString(titleStyle.Render("UP NEXT") + "\n\n")
 		items := m.queue.Items()
 		if len(items) == 0 {
@@ -202,8 +203,9 @@ func (m Model) View() tea.View {
 				}
 				
 				line := fmt.Sprintf("%s%02d  %s%s", cursor, i+1, t.Title, lyricsIcon)
-				if len(line) > mainWidth - 4 {
-					line = line[:mainWidth-7] + "..."
+				runes := []rune(line)
+				if len(runes) > mainWidth - 4 {
+					line = string(runes[:mainWidth-7]) + "..."
 				}
 				mb.WriteString(style.Width(mainWidth-2).Render(line) + "\n")
 			}
@@ -247,8 +249,9 @@ func (m Model) View() tea.View {
 				}
 				
 				line := fmt.Sprintf("%s%02d  %s%s", cursor, i+1, t.Title, lyricsIcon)
-				if len(line) > mainWidth - 4 {
-					line = line[:mainWidth-7] + "..."
+				runes := []rune(line)
+				if len(runes) > mainWidth - 4 {
+					line = string(runes[:mainWidth-7]) + "..."
 				}
 				mb.WriteString(style.Width(mainWidth-2).Render(line) + "\n")
 				mb.WriteString(mutedStyle.Render(fmt.Sprintf("      %s", formatArtistAlbum(t))) + "\n")
@@ -286,7 +289,10 @@ func (m Model) View() tea.View {
 				}
 				
 				line := fmt.Sprintf("%s%s%s", cursor, t.Title, lyricsIcon)
-				if len(line) > mainWidth - 4 { line = line[:mainWidth-7] + "..." }
+				runes := []rune(line)
+				if len(runes) > mainWidth - 4 {
+					line = string(runes[:mainWidth-7]) + "..."
+				}
 				mb.WriteString(style.Width(mainWidth-2).Render(line) + "\n")
 			}
 		}
@@ -319,7 +325,10 @@ func (m Model) View() tea.View {
 				}
 				
 				line := fmt.Sprintf("%s%s%s", cursor, h.Track.Title, lyricsIcon)
-				if len(line) > mainWidth - 4 { line = line[:mainWidth-7] + "..." }
+				runes := []rune(line)
+				if len(runes) > mainWidth - 4 {
+					line = string(runes[:mainWidth-7]) + "..."
+				}
 				mb.WriteString(style.Width(mainWidth-2).Render(line) + "\n")
 			}
 		}

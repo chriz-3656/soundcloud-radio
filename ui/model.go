@@ -26,6 +26,7 @@ const (
 	ViewSplash ViewState = iota
 	ViewSetup
 	ViewHome
+	ViewQueue
 	ViewSearch
 	ViewFavorites
 	ViewHistory
@@ -63,6 +64,8 @@ type Model struct {
 	favCursor    int
 	histCursor   int
 	lyricsCursor int
+	homeCursor   int
+	homeFeed     []models.Track
 	
 	// Notification
 	notification string
@@ -133,4 +136,16 @@ func tickProgress() tea.Cmd {
 	return tea.Tick(time.Second/4, func(t time.Time) tea.Msg {
 		return tickMsg(t)
 	})
+}
+
+type homeFeedMsg []models.Track
+
+func (m *Model) fetchHomeFeedCmd() tea.Cmd {
+	return func() tea.Msg {
+		feed, err := m.activeProvider.GetHomeFeed(m.ctx)
+		if err != nil {
+			return errMsg(err)
+		}
+		return homeFeedMsg(feed)
+	}
 }

@@ -8,4 +8,5 @@ type Track struct {
 	Duration     int64
 	PermalinkURL string
 	ArtworkURL   string
+	DirectMediaURL string
 }

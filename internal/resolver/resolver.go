@@ -33,6 +33,9 @@ func NewYTDLPResolver() *YTDLPResolver {
 }
 
 func (r *YTDLPResolver) Resolve(ctx context.Context, track models.Track, cookieMode string) (*ResolvedStream, error) {
+	if track.DirectMediaURL != "" {
+		return &ResolvedStream{URL: track.DirectMediaURL}, nil
+	}
 	if cookieMode == "auto" {
 		var errs []string
 		

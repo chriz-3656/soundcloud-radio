@@ -126,3 +126,8 @@ func (c *Client) GetRelatedTracks(ctx context.Context, trackID string, limit int
 	
 	return tracks, nil
 }
+
+func (c *Client) GetHomeFeed(ctx context.Context) ([]models.Track, error) {
+	// SoundCloud doesn't have a public trending API, so we search for popular tracks
+	return c.SearchTracks(ctx, "top 50 trending", 20)
+}

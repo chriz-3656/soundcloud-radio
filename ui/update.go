@@ -133,12 +133,15 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.showNotif("Unmuted")
 			}
 		case "tab":
+			
 			m.providerIndex = (m.providerIndex + 1) % len(m.providers)
 			m.activeProvider = m.providers[m.providerIndex]
 			m.searchInput.Placeholder = "Search " + m.activeProvider.GetName() + "..."
 			m.searchResults = nil
+			m.homeFeed = nil
 			m.showNotif("Switched provider to " + m.activeProvider.GetName())
 			UpdateTheme(m.activeProvider.GetName())
+			cmds = append(cmds, m.fetchHomeFeedCmd())
 		case "l", "L":
 			if m.hasLyrics {
 				if m.viewState == ViewLyrics {
@@ -209,7 +212,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 			}
 
-		case ViewHome: // Used as Queue view
+		case ViewQueue: // Used as Queue view
 			switch msg.String() {
 			case "j", "down":
 				if m.queueCursor < m.queue.Len()-1 {
@@ -325,11 +328,12 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if msg.X < 25 {
 				switch msg.Y {
 				case 3, 4: m.viewState = ViewHome
-				case 5, 6: m.viewState = ViewSearch
-				case 7, 8: m.viewState = ViewFavorites
-				case 9, 10: m.viewState = ViewHistory
-				case 12, 13: m.viewState = ViewHelp
-				case 14, 15: m.viewState = ViewSettings
+				case 5, 6: m.viewState = ViewQueue
+				case 7, 8: m.viewState = ViewSearch
+				case 9, 10: m.viewState = ViewFavorites
+				case 11, 12: m.viewState = ViewHistory
+				case 14, 15: m.viewState = ViewHelp
+				case 16, 17: m.viewState = ViewSettings
 				}
 			} else if msg.X >= 25 && msg.X < m.width-35 {
 				if m.viewState == ViewSearch {
@@ -396,7 +400,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case setupDoneMsg:
 		m.setupDone = true
 		m.viewState = ViewHome
-		return m, nil
+		return m, m.fetchHomeFeedCmd()
 
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
@@ -446,6 +450,11 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				cmds = append(cmds, m.fetchRelatedCmd(seedTrack.ID))
 			}
 		}
+
+	case homeFeedMsg:
+		m.homeFeed = msg
+		m.homeCursor = 0
+		cmds = append(cmds, m.checkLyricsBulkCmd(msg))
 
 	case searchResultMsg:
 		m.isSearching = false
