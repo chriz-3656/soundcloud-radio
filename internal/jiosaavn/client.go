@@ -179,7 +179,7 @@ func (c *Client) GetHomeFeed(ctx context.Context) ([]models.Track, error) {
 	query := url.Values{}
 	query.Set("__call", "content.getTrending")
 	query.Set("entity_type", "song")
-	query.Set("entity_language", "hindi,english")
+	query.Set("entity_language", "hindi")
 
 	body, err := c.doRequest(ctx, query)
 	if err != nil {
