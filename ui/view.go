@@ -128,7 +128,7 @@ func (m Model) View() tea.View {
 
 	// === 1. SIDEBAR ===
 	var sb strings.Builder
-	sb.WriteString(brandStyle.Render("♫ SOUNDCLOUD") + "\n\n")
+	sb.WriteString(brandStyle.Render("⚡ ECHO RADIO") + "\n\n")
 	
 	menuItems := []struct{
 		label string

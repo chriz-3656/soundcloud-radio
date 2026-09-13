@@ -38,6 +38,15 @@ func fetchArtworkCmd(trackID string, url string) tea.Cmd {
 					if err2 == nil { resp2.Body.Close() }
 					return artworkMsg{trackID: trackID, art: ""}
 				}
+			} else if strings.Contains(url, "500x500.jpg") {
+				url2 := strings.Replace(url, "500x500.jpg", "150x150.jpg", 1)
+				resp2, err2 := client.Get(url2)
+				if err2 == nil && resp2.StatusCode == 200 {
+					resp = resp2
+				} else {
+					if err2 == nil { resp2.Body.Close() }
+					return artworkMsg{trackID: trackID, art: ""}
+				}
 			} else {
 				return artworkMsg{trackID: trackID, art: ""}
 			}
