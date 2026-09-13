@@ -14,7 +14,7 @@ import (
 	"soundcloud-radio/internal/lyrics"
 	"soundcloud-radio/internal/player"
 	"soundcloud-radio/internal/resolver"
-	"soundcloud-radio/internal/soundcloud"
+	
 )
 
 type searchResultMsg []models.Track
