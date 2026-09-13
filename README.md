@@ -1,19 +1,19 @@
-# SoundCloud Radio TUI
+# ⚡ Echo Radio TUI
 
-A blazing-fast, premium terminal user interface (TUI) music player for SoundCloud, designed with a modern architecture inspired by Spotify-TUI and YouTube Music. Built entirely in Go using the Bubble Tea framework.
+A blazing-fast, premium terminal user interface (TUI) music player. Originally built as a SoundCloud client, Echo Radio has evolved into a dual-provider powerhouse featuring **JioSaavn** (Primary) and **SoundCloud** (Fallback) integration. Built entirely in Go using the Bubble Tea framework.
 
 ## 🚀 Features
 
-- **Premium UI:** 3-column layout (Sidebar, Main Content, Now Playing) with a persistent playbar.
-- **Vast Search:** Seamlessly search SoundCloud with up to 50 results at a time, fully paginated.
-- **Synchronized Lyrics:** Natively integrates the LRCLIB API to fetch and display synchronized lyrics for tracks (with a fast `📜` availability indicator).
-- **TrueColor Album Art:** Renders high-fidelity TrueColor (24-bit) album art using ANSI blocks directly in your terminal.
-- **Radio Mode (Autoplay):** Let the algorithm take over. Automatically fetches related tracks to keep the music playing infinitely based on your queue history.
-- **Favorites & History:** Persists your listening history and favorite tracks locally to `~/.config/soundcloud-radio/data.json`.
-- **Intelligent Resizing:** Gracefully falls back to a compact, text-only layout on small terminals (< 85x20).
-- **Audio Engine Integration:** Direct IPC integration with `mpv` for zero-latency playback control, volume adjustments, and exact progress tracking.
-- **Self-Healing Bootloader:** Automatically detects missing `yt-dlp` dependencies and natively downloads the latest official binary to the application cache during the boot sequence.
-- **Mouse Support:** Full mouse clicking support for seamless sidebar navigation and search focus.
+- **Dual-Provider Ecosystem:** Hot-switch between JioSaavn and SoundCloud using the `Tab` key.
+- **Zero-Latency Playback:** JioSaavn streams are natively decrypted (DES-ECB) in Go, completely bypassing `yt-dlp` for instantaneous playback!
+- **Dynamic Trending Homepages:** Echo fetches the real-time trending charts for India (JioSaavn) or Top 50 Global (SoundCloud) directly to your home screen.
+- **Premium UI:** 3-column layout (Sidebar, Main Content, Now Playing) with a persistent playbar and fully responsive scaling.
+- **Vast Search:** Seamlessly search your active provider with up to 50 results at a time, fully paginated.
+- **Synchronized Lyrics & Multilingual Support:** Natively integrates the LRCLIB API. Enhanced Unicode `[]rune` parsing guarantees flawless text wrapping for Hindi, Tamil, and other non-ASCII characters without shattering the UI.
+- **TrueColor Album Art:** Renders high-fidelity TrueColor (24-bit) album art natively in your terminal with automatic failovers (`500x500` -> `150x150`).
+- **Radio Mode (Autoplay):** Let the algorithm take over. Automatically fetches endless related tracks to keep the music playing infinitely based on the current track (fully deduplicated!).
+- **Favorites & History:** Persists your listening history and favorite tracks locally.
+- **Self-Healing Bootloader:** Automatically detects missing `yt-dlp` dependencies and natively downloads the latest official binary for SoundCloud fallback resolution.
 
 ## 📦 Installation
 
@@ -31,9 +31,8 @@ Ensure you have the following installed on your system:
 ```bash
 git clone https://github.com/chriz-3656/soundcloud-radio.git
 cd soundcloud-radio
-make build
+go build -o echo-radio cmd/radio/main.go
 ```
-The binary will be located at `bin/soundcloud-radio`.
 
 ## ⌨️ Keybindings
 
@@ -45,12 +44,13 @@ The binary will be located at `bin/soundcloud-radio`.
 - `+` / `=` : Volume Up
 - `-` / `_` : Volume Down
 - `m` : Mute / Unmute
+- `Tab` : Switch Provider (JioSaavn <-> SoundCloud)
 - `f` / `F` : Favorite / Unfavorite the current track
 - `l` / `L` : Toggle Lyrics View
 - `/` : Quick search (jumps to search box)
 - `q` or `Ctrl+C` : Quit application
 
-**Queue Commands:**
+**Queue/Home Commands:**
 - `a` : Add highlighted track to queue
 - `d` : Remove highlighted track from queue
 - `c` : Clear the entire queue
@@ -60,42 +60,28 @@ The binary will be located at `bin/soundcloud-radio`.
 - `Up` / `k` : Move cursor up
 - `Down` / `j` : Move cursor down
 - `Enter` : Select item / Play track
-- `Esc` : Blur search box or go back to Queue
+- `Esc` : Blur search box or go back to Home Feed
 
 ---
 
 ## 📜 Development History & Changelog
 
 ### The Journey
-This project started as an experiment in building a hyper-responsive Terminal UI for SoundCloud and evolved into a feature-rich, standalone music player. Over the course of development, we iteratively squashed bugs, integrated complex external APIs, and polished the user experience.
+This project started as an experiment in building a hyper-responsive Terminal UI for SoundCloud and evolved into a multi-provider feature-rich player named Echo Radio. Over the course of development, we iteratively squashed bugs, integrated complex external APIs, built cryptography layers, and polished the user experience.
 
-### v1.0.1 - v1.0.6: The Foundation & Self-Healing Setup
-- **Feature Added:** Implemented a massive ASCII `SCLOUD.` startup bootloader that runs system dependency checks.
-- **Bug Fixed:** "All cookie strategies failed to resolve stream".
-  - *Cause:* Swallowing standard errors in `yt-dlp` execution masked the fact that `yt-dlp` wasn't actually installed on the system.
-  - *Solution:* Engineered `EnsureYTDLP()`, an automated self-healing protocol that detects if `yt-dlp` is missing, downloads the latest binary directly from GitHub, and executes it from `~/.config/soundcloud-radio/`.
-- **Bug Fixed:** `Ctrl+C` was not quitting the app when searching.
-  - *Cause:* Bubble Tea's `textinput` component was intercepting global OS kill sequences.
-  - *Solution:* Added an exclusion clause to bypass standard kill sequences when the input field is focused.
-- **Bug Fixed:** Album Art reverting to generic SoundCloud logos.
-  - *Cause:* Attempting to fetch `-large.jpg` for album art would result in a `404 Not Found` for certain tracks, causing the engine to fall back to a default logo.
-  - *Solution:* Rewrote the resolver to pull the native `-t200x200.jpg` CDN URLs before scaling them down into terminal ANSI grids.
+### v2.0.0 - v2.1.0: Echo Radio, Dual-Providers, and Zero-Latency ⚡
+- **Feature Added (The Rebrand):** Transformed "SoundCloud Radio" into **Echo Radio**. Introduced dynamic ASCII branding and dual-provider support.
+- **Feature Added (JioSaavn Native Engine):** Wrote a native Go DES-ECB decryption layer for JioSaavn's `encrypted_media_url`. This bypasses `yt-dlp` completely, dropping resolve latency from 25+ seconds to literal milliseconds!
+- **Feature Added (Dynamic Homepages):** Replaced the static queue screen with interactive, provider-specific Home Feeds (e.g., JioSaavn's "Trending in India" charts). Pressing `Tab` instantly swaps the ecosystem, theme, and feeds.
+- **Bug Fixed (Non-ASCII Layout Breaks):** Hindi/Tamil song titles were breaking the BubbleTea UI grid. Transitioned all text-slicing logic from standard byte-lengths `len(line)` to true Unicode array slicing `[]rune(line)`.
+- **Bug Fixed (Album Art Failovers):** JioSaavn tracks missing high-res (`500x500`) artwork caused standard default ASCII fallback. Engineered automatic fallback degradation to `150x150` native thumbnails.
+- **Bug Fixed (Empty Radio Queue):** Auto-queue failed to seed if no track was currently playing. Enter key was hooked to seed the Radio generation pipeline on first playback.
+- **Feature Added:** Built API deduplication maps (`seen[id]`) to permanently eliminate duplicate tracks across Search and Radio modules.
 
-### v1.0.7 - v1.0.9: Lyrics Integration & Keybinding Polish
-- **Feature Added:** Integrated the **LRCLIB API** for perfectly synchronized lyrics. Pressing `l` or `L` dynamically replaces the main interface with a scrollable lyrics sheet.
-- **Bug Fixed:** LRCLIB API returning `503 Service Unavailable` or `context deadline exceeded`.
-  - *Cause:* Network latency causing the default 5s HTTP client timeout to trigger early.
-  - *Solution:* Bumped HTTP timeout to 10s. Identified 30-second SoundCloud Go+ paywall restrictions for premium tracks.
-- **Bug Fixed:** Uppercase `L` and `F` inputs were being ignored by the key listener.
-  - *Cause:* Exact character-string matching in Bubble Tea event loop.
-  - *Solution:* Hardcoded explicit string routing for upper-case keystrokes.
-
-### v1.0.10 - v1.0.13: UI Refinement & Async Bulk Fetching
-- **Bug Fixed:** Mathematical `panic()` when terminal was resized below 63 columns.
-  - *Cause:* Subtracting fixed UI layout integers from a terminal width that was too small resulted in a negative width constraint being passed to Lipgloss layout renderers.
-  - *Solution:* Raised the safety fallback threshold to `85x20` to guarantee the engine collapses to the small-terminal ASCII UI gracefully.
-- **Feature Added:** Built an **Asynchronous Bulk LRCLIB Fetcher**. When searching, the engine silently fires off 50 concurrent requests in a non-blocking background pool. If lyrics are discovered, a `📜` emoji seamlessly pops into the UI adjacent to the track.
-- **Feature Added:** Extracted the Audio Visualizer from the Now Playing sidebar and spanned it dynamically across 31 blocks specifically locked to the bottom of the right-hand panel for extreme visual flair.
+### v1.0.1 - v1.0.13: The Foundation & Self-Healing Setup
+- **Feature Added:** Massive ASCII startup bootloader that runs system dependency checks. Engineered `EnsureYTDLP()`, an automated self-healing protocol that detects missing binaries and downloads them.
+- **Feature Added:** Integrated the **LRCLIB API** for perfectly synchronized lyrics. Implemented Asynchronous Bulk Fetching in the background.
+- **Bug Fixed:** `Ctrl+C` was failing due to Bubble Tea's `textinput` interception. Mathematical panics on small terminal screens were resolved by enforcing strict > 85x20 thresholds.
 
 ## 👨‍💻 Developer
 Developed by **chriz-3656 (Chris Mon Saji)**.
