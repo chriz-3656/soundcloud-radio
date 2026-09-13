@@ -9,7 +9,7 @@ import (
 	"sync"
 	"time"
 
-	"soundcloud-radio/internal/soundcloud"
+	
 )
 
 type HistoryItem struct {
@@ -84,7 +84,7 @@ func (s *Store) AddFavorite(t models.Track) {
 	go s.Save()
 }
 
-func (s *Store) RemoveFavorite(id int64) {
+func (s *Store) RemoveFavorite(id string) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	var updated []models.Track
@@ -97,7 +97,7 @@ func (s *Store) RemoveFavorite(id int64) {
 	go s.Save()
 }
 
-func (s *Store) IsFavorite(id int64) bool {
+func (s *Store) IsFavorite(id string) bool {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	for _, f := range s.Data.Favorites {

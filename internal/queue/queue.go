@@ -6,7 +6,7 @@ import (
 	"sync"
 	"math/rand"
 	
-	"soundcloud-radio/internal/soundcloud"
+	
 )
 
 type Queue struct {
@@ -14,7 +14,7 @@ type Queue struct {
 	items        []models.Track
 	history      []models.Track
 	historyLimit int
-	playedIds    map[int64]bool
+	playedIds    map[string]bool
 }
 
 func NewQueue(historyLimit int) *Queue {
@@ -25,7 +25,7 @@ func NewQueue(historyLimit int) *Queue {
 		items:        make([]models.Track, 0),
 		history:      make([]models.Track, 0),
 		historyLimit: historyLimit,
-		playedIds:    make(map[int64]bool),
+		playedIds:    make(map[string]bool),
 	}
 }
 
