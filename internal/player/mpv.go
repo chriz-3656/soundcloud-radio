@@ -89,9 +89,15 @@ func (m *MPVPlayer) Play(ctx context.Context, stream resolver.ResolvedStream, me
 
 	go m.listenIPC(conn)
 	
+	currentCmd := m.cmd
 	go func() {
-		m.cmd.Wait()
-		m.Stop()
+		currentCmd.Wait()
+		m.mu.Lock()
+		isActive := (m.cmd == currentCmd)
+		m.mu.Unlock()
+		if isActive {
+			m.Stop()
+		}
 	}()
 
 	go m.pollPosition(ctx)

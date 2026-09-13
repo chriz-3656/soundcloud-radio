@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 
 	"soundcloud-radio/internal/models"
@@ -81,6 +82,7 @@ func (c *Client) SearchTracks(ctx context.Context, q string, limit int) ([]model
 		Results []struct {
 			ID             string `json:"id"`
 			Song           string `json:"song"`
+			Album          string `json:"album"`
 			PrimaryArtists string `json:"primary_artists"`
 			PermaURL       string `json:"perma_url"`
 			Image          string `json:"image"`
@@ -97,8 +99,9 @@ func (c *Client) SearchTracks(ctx context.Context, q string, limit int) ([]model
 			ID:           t.ID,
 			Title:        t.Song,
 			Artist:       t.PrimaryArtists,
+			Album:        t.Album,
 			PermalinkURL: t.PermaURL,
-			ArtworkURL:   t.Image,
+			ArtworkURL:   strings.ReplaceAll(t.Image, "150x150", "500x500"),
 			Duration:     0, // Need extra parsing for duration, keeping it 0 for now
 		})
 	}
@@ -131,6 +134,7 @@ func (c *Client) GetRelatedTracks(ctx context.Context, trackID string, limit int
 					id, _ := tmap["id"].(string)
 					song, _ := tmap["song"].(string)
 					artist, _ := tmap["primary_artists"].(string)
+					album, _ := tmap["album"].(string)
 					purl, _ := tmap["perma_url"].(string)
 					img, _ := tmap["image"].(string)
 					
@@ -138,8 +142,9 @@ func (c *Client) GetRelatedTracks(ctx context.Context, trackID string, limit int
 						ID:           id,
 						Title:        song,
 						Artist:       artist,
+						Album:        album,
 						PermalinkURL: purl,
-						ArtworkURL:   img,
+						ArtworkURL:   strings.ReplaceAll(img, "150x150", "500x500"),
 					})
 				}
 			}

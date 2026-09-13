@@ -138,6 +138,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.searchInput.Placeholder = "Search " + m.activeProvider.GetName() + "..."
 			m.searchResults = nil
 			m.showNotif("Switched provider to " + m.activeProvider.GetName())
+			UpdateTheme(m.activeProvider.GetName())
 		case "l", "L":
 			if m.hasLyrics {
 				if m.viewState == ViewLyrics {

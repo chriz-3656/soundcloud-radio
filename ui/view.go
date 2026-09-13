@@ -12,26 +12,53 @@ import (
 )
 
 var (
-	brandStyle        = lipgloss.NewStyle().Foreground(lipgloss.Color("208")).Bold(true)
-	titleStyle        = lipgloss.NewStyle().Foreground(lipgloss.Color("214")).Bold(true)
+	brandStyle        lipgloss.Style
+	titleStyle        lipgloss.Style
 	artistStyle       = lipgloss.NewStyle().Foreground(lipgloss.Color("245"))
-	infoStyle         = lipgloss.NewStyle().Foreground(lipgloss.Color("202"))
+	infoStyle         lipgloss.Style
 	errorStyle        = lipgloss.NewStyle().Foreground(lipgloss.Color("196"))
 	statusStyle       = lipgloss.NewStyle().Foreground(lipgloss.Color("220"))
 	successStyle      = lipgloss.NewStyle().Foreground(lipgloss.Color("77"))
-	selectedItemStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("208")).Bold(true).Background(lipgloss.Color("236"))
+	selectedItemStyle lipgloss.Style
 	itemStyle         = lipgloss.NewStyle().Foreground(lipgloss.Color("252"))
 	mutedStyle        = lipgloss.NewStyle().Foreground(lipgloss.Color("240"))
 	
 	panelBorderStyle  = lipgloss.NewStyle().Border(lipgloss.RoundedBorder()).BorderForeground(lipgloss.Color("238"))
-	activeBorderStyle = lipgloss.NewStyle().Border(lipgloss.RoundedBorder()).BorderForeground(lipgloss.Color("208"))
+	activeBorderStyle lipgloss.Style
 )
+
+func UpdateTheme(providerName string) {
+	if providerName == "JioSaavn" {
+		brandStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("43")).Bold(true) // Cyan-Green
+		titleStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("86")).Bold(true)
+		infoStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("42"))
+		selectedItemStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("43")).Bold(true).Background(lipgloss.Color("236"))
+		activeBorderStyle = lipgloss.NewStyle().Border(lipgloss.RoundedBorder()).BorderForeground(lipgloss.Color("43"))
+	} else { // SoundCloud
+		brandStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("208")).Bold(true) // Orange
+		titleStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("214")).Bold(true)
+		infoStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("202"))
+		selectedItemStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("208")).Bold(true).Background(lipgloss.Color("236"))
+		activeBorderStyle = lipgloss.NewStyle().Border(lipgloss.RoundedBorder()).BorderForeground(lipgloss.Color("208"))
+	}
+}
+
+func init() {
+	UpdateTheme("JioSaavn") // Default theme
+}
 
 func formatDuration(d time.Duration) string {
 	d = d.Round(time.Second)
 	m := int(d.Minutes())
 	s := int(d.Seconds()) % 60
 	return fmt.Sprintf("%02d:%02d", m, s)
+}
+
+func formatArtistAlbum(t models.Track) string {
+	if t.Album != "" {
+		return t.Artist + " • " + t.Album
+	}
+	return t.Artist
 }
 
 func renderArtwork() string {
@@ -223,7 +250,7 @@ func (m Model) View() tea.View {
 					line = line[:mainWidth-7] + "..."
 				}
 				mb.WriteString(style.Width(mainWidth-2).Render(line) + "\n")
-				mb.WriteString(mutedStyle.Render(fmt.Sprintf("      %s", t.Artist)) + "\n")
+				mb.WriteString(mutedStyle.Render(fmt.Sprintf("      %s", formatArtistAlbum(t))) + "\n")
 			}
 			if len(m.searchResults) > itemsPerPage {
 				mb.WriteString(mutedStyle.Render(fmt.Sprintf("\n  ... %d results total", len(m.searchResults))))

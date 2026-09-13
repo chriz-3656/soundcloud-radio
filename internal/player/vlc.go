@@ -49,9 +49,15 @@ func (v *VLCPlayer) Play(ctx context.Context, stream resolver.ResolvedStream, me
 		return err
 	}
 
+	currentCmd := v.cmd
 	go func() {
-		v.cmd.Wait()
-		v.Stop()
+		currentCmd.Wait()
+		v.mu.Lock()
+		isActive := (v.cmd == currentCmd)
+		v.mu.Unlock()
+		if isActive {
+			v.Stop()
+		}
 	}()
 
 	return nil
