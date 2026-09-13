@@ -35,7 +35,7 @@ type lyricsMsg struct {
 }
 
 type lyricsCheckResultMsg struct {
-	trackID   int64
+	trackID   string
 	hasLyrics bool
 }
 
